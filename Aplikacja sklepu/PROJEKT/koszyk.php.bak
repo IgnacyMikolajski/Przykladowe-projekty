@@ -1,0 +1,76 @@
+<?php
+session_start();
+require_once "config.php";
+
+$user_id = $_SESSION["id"];
+$sql = "SELECT user_id, produkt_id FROM koszyk WHERE user_id = $user_id";
+$result = $link->query($sql);
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sklep</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Dodaj styl CSS tutaj */
+    </style>
+</head>
+<body>
+
+<h1>Koszyk</h1>
+
+<?php
+$cena_koncowa = 0;
+$user_id = $_SESSION["id"];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+		if ($row["user_id"] == $user_id) {
+			$produkt_id = $row["produkt_id"];
+			$sql1 = "SELECT nazwa, cena, obraz_link FROM produkty WHERE id = $produkt_id";
+			$result1 = $link->query($sql1);
+			while ($row1 = $result1->fetch_assoc()) {
+				$cena_koncowa += $row1["cena"];
+			}
+		}
+	}
+}
+if($cena_koncowa){
+	echo"<form method='post' action='zamowiono.php'>
+	<button style='font-size:22px;' class='btn btn-primary btn-lg mr-3' type='submit' name='zamow'>Kupuję i płacę $cena_koncowa</button>;
+</form>";
+}
+echo"<form method='post' action='login.php'>
+	<button style='font-size:22px;' class='btn btn-primary btn-lg mr-3' type='submit' name='powrot'>Powrót</button>;
+</form>";
+
+$user_id = $_SESSION["id"];
+$sql = "SELECT user_id, produkt_id FROM koszyk WHERE user_id = $user_id";
+$result = $link->query($sql);
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+		if ($row["user_id"] == $user_id) {
+			$produkt_id = $row["produkt_id"];
+			$sql1 = "SELECT nazwa, cena, obraz_link FROM produkty WHERE id = $produkt_id";
+			$result1 = $link->query($sql1);
+			while ($row1 = $result1->fetch_assoc()) {
+				echo "<div>";
+				echo "<h3>" . $row1["nazwa"] . "</h3>";
+				echo "<p>Cena: " . $row1["cena"] . " zł</p>";
+				$obraz1 = $row1["obraz_link"];
+				echo $obraz1;
+				echo "<hr>";
+				echo "</div>";
+			}
+		}
+    }
+} else {
+    echo "<h1 style='font-size: 22px;'>Koszyk jest pusty.</h1>";
+}
+
+?>
+
+</body>
+</html>
